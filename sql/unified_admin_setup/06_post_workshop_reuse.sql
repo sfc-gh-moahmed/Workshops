@@ -7,19 +7,26 @@
   Prerequisites: Sections 1-5 (workshop complete)
 
   FIND-AND-REPLACE before running:
-    OA_FUNCTIONS_DATA_SCIENCE  ->  Your CHOP data science AD-synced role
-    APP_SNOWFLAKE_DATA_ANALYST ->  Your CHOP analyst AD-synced role
+    OA_FUNCTIONS_DATA_SCIENCE            ->  Your CHOP data science functional role (capabilities)
+    APP_SNOWFLAKE_DATA_SCIENCE_PROFESSIONAL -> Your CHOP data science parent role (object access)
+    FUNCTIONAL_TESTERS                   ->  Your CHOP functional testers role (workshop/experimental)
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
 
 -- ===================== Step 1: Wire AI Roles into CHOP Hierarchy =====================
 
+-- DATA SCIENCE: capabilities (Cortex, ML functions)
 GRANT ROLE AI_DATA_SCIENCE
-    TO ROLE OA_FUNCTIONS_DATA_SCIENCE;       -- << CHOP_DS_ROLE
+    TO ROLE OA_FUNCTIONS_DATA_SCIENCE;            -- << CHOP_DS_ROLE
 
+-- DATA SCIENCE: object access (databases, schemas)
+GRANT ROLE AI_DATA_SCIENCE
+    TO ROLE APP_SNOWFLAKE_DATA_SCIENCE_PROFESSIONAL; -- << CHOP_DS_PARENT_ROLE
+
+-- ANALYSTS: workshop/experimental features
 GRANT ROLE AI_EXPLORER
-    TO ROLE APP_SNOWFLAKE_DATA_ANALYST;      -- << CHOP_ANALYST_ROLE
+    TO ROLE FUNCTIONAL_TESTERS;                   -- << CHOP_ANALYST_ROLE
 
 -- ===================== Step 2: Adjust Budgets (if needed) =====================
 

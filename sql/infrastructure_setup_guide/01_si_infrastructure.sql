@@ -75,3 +75,8 @@ GRANT SELECT ON ALL VIEWS IN SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE
 
 -- 6. CORTEX AI PERMISSIONS
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE CHOP_snow_intelligence;
+
+-- 7. POST-WORKSHOP: Wire into CHOP hierarchy (Section 6 of unified_admin_setup)
+-- Uncomment after Data Trust approval from Anjita Shetty
+-- GRANT ROLE CHOP_SNOW_INTELLIGENCE
+--     TO ROLE FUNCTIONAL_TESTERS;              -- << CHOP_ANALYST_ROLE

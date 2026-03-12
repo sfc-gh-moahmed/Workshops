@@ -45,3 +45,10 @@ GRANT CREATE STAGE ON SCHEMA HEALTHCARE_ML.INFERENCE TO ROLE ML_ENGINEER;
 
 -- Assign to users
 -- GRANT ROLE ML_ENGINEER TO USER <data_scientist_username>;
+
+-- POST-WORKSHOP: Wire into CHOP hierarchy (Section 6 of unified_admin_setup)
+-- Uncomment after Data Trust approval from Anjita Shetty
+-- GRANT ROLE ML_ENGINEER
+--     TO ROLE OA_FUNCTIONS_DATA_SCIENCE;        -- << CHOP_DS_ROLE (capabilities)
+-- GRANT ROLE ML_ENGINEER
+--     TO ROLE APP_SNOWFLAKE_DATA_SCIENCE_PROFESSIONAL; -- << CHOP_DS_PARENT_ROLE (object access)
