@@ -1,0 +1,110 @@
+/*
+=============================================================================
+  CHOP Infrastructure Setup Guide — Section 6: SI Functions & Procedures
+  Script 05: NLP UDFs, batch extraction, Streamlit generator
+=============================================================================
+  Run as: ACCOUNTADMIN
+  Prerequisites: 01_si_infrastructure.sql (views must exist)
+  File ref: example_chop/for_the_customer/03_support_functions_chop.sql
+=============================================================================
+*/
+USE ROLE ACCOUNTADMIN;
+USE SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
+USE WAREHOUSE CHOP_snow_intelligence_WH;
+
+-- FUNCTION 1: Extract Entities from Prescription Free-Text (SIG)
+CREATE OR REPLACE FUNCTION SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES(
+    SIG_TEXT VARCHAR
+)
+RETURNS VARIANT
+LANGUAGE SQL
+COMMENT = 'Extracts medication, dosage, frequency, route, duration from free-text SIG'
+AS
+$$
+    SELECT SNOWFLAKE.CORTEX.AI_EXTRACT(
+        SIG_TEXT,
+        ['medication_name', 'dosage_amount', 'dosage_unit', 'frequency',
+         'route_of_administration', 'duration', 'special_instructions']
+    )
+$$;
+
+-- FUNCTION 2: Classify Medication Route from Free-Text
+CREATE OR REPLACE FUNCTION SI_CHOP.CHOP_SNOW_INTELLIGENCE.CLASSIFY_MED_ROUTE(
+    DIRECTION_TEXT VARCHAR
+)
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = 'Classifies admin route from free-text into standard categories'
+AS
+$$
+    SELECT SNOWFLAKE.CORTEX.AI_CLASSIFY(
+        DIRECTION_TEXT,
+        ['oral', 'intravenous', 'intramuscular', 'subcutaneous', 'topical',
+         'inhaled', 'rectal', 'ophthalmic', 'otic', 'nasal', 'transdermal', 'other']
+    ):label::VARCHAR
+$$;
+
+-- PROCEDURE 1: Batch Extract Entities from Recent Prescriptions
+CREATE OR REPLACE PROCEDURE
+    SI_CHOP.CHOP_SNOW_INTELLIGENCE.BATCH_EXTRACT_PRESCRIPTION_ENTITIES(
+    BATCH_SIZE INT DEFAULT 1000
+)
+RETURNS VARCHAR
+LANGUAGE SQL
+EXECUTE AS CALLER
+AS
+BEGIN
+    CREATE TABLE IF NOT EXISTS SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_ENTITIES (
+        SCRIPTNUMBER NUMBER, DRUG_DESCRIPTION VARCHAR,
+        ORIGINAL_DIRECTIONS VARCHAR,
+        EXTRACTED_MEDICATION VARCHAR, EXTRACTED_DOSAGE_AMOUNT VARCHAR,
+        EXTRACTED_DOSAGE_UNIT VARCHAR, EXTRACTED_FREQUENCY VARCHAR,
+        EXTRACTED_ROUTE VARCHAR, EXTRACTED_DURATION VARCHAR,
+        EXTRACTED_SPECIAL_INSTRUCTIONS VARCHAR,
+        EXTRACTION_TIMESTAMP TIMESTAMP_LTZ DEFAULT CURRENT_TIMESTAMP()
+    );
+    INSERT INTO SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_ENTITIES (
+        SCRIPTNUMBER, DRUG_DESCRIPTION, ORIGINAL_DIRECTIONS,
+        EXTRACTED_MEDICATION, EXTRACTED_DOSAGE_AMOUNT, EXTRACTED_DOSAGE_UNIT,
+        EXTRACTED_FREQUENCY, EXTRACTED_ROUTE, EXTRACTED_DURATION,
+        EXTRACTED_SPECIAL_INSTRUCTIONS)
+    SELECT rx.SCRIPTNUMBER, rx.DRUGDESCRIPTION, rx.ADMINISTRATIONDIRECTIONS,
+        e.entities:medication_name::VARCHAR, e.entities:dosage_amount::VARCHAR,
+        e.entities:dosage_unit::VARCHAR, e.entities:frequency::VARCHAR,
+        e.entities:route_of_administration::VARCHAR,
+        e.entities:duration::VARCHAR, e.entities:special_instructions::VARCHAR
+    FROM SI_CHOP.CHOP_SNOW_INTELLIGENCE.V_PHARMACY_ALLMEDICALSCRIPTS rx,
+    LATERAL (
+        SELECT SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES(
+            rx.ADMINISTRATIONDIRECTIONS) AS entities
+    ) e
+    WHERE rx.ADMINISTRATIONDIRECTIONS IS NOT NULL
+      AND rx.SCRIPTNUMBER NOT IN (
+          SELECT SCRIPTNUMBER FROM SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_ENTITIES)
+    LIMIT :BATCH_SIZE;
+    RETURN 'Batch extraction complete. Processed up to ' || :BATCH_SIZE || ' prescriptions.';
+END;
+
+-- PROCEDURE 2: Generate Streamlit Dashboard
+CREATE OR REPLACE PROCEDURE SI_CHOP.CHOP_SNOW_INTELLIGENCE.GENERATE_STREAMLIT_APP(
+    USER_INPUT VARCHAR
+)
+RETURNS VARCHAR LANGUAGE SQL EXECUTE AS CALLER
+AS
+BEGIN
+    RETURN SNOWFLAKE.CORTEX.COMPLETE('claude-3-5-sonnet',
+        'You are a Streamlit app generator for CHOP pharmacy analytics. ' ||
+        'Generate a complete Streamlit Python script. ' ||
+        'Available data: V_PHARMACY_ALLMEDICALSCRIPTS, V_MEDICATION_ORDER_ALL, ' ||
+        'PRESCRIPTION_ENTITIES. User requirement: ' || :USER_INPUT);
+END;
+
+-- GRANTS
+GRANT USAGE ON FUNCTION SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES(VARCHAR)
+    TO ROLE CHOP_snow_intelligence;
+GRANT USAGE ON FUNCTION SI_CHOP.CHOP_SNOW_INTELLIGENCE.CLASSIFY_MED_ROUTE(VARCHAR)
+    TO ROLE CHOP_snow_intelligence;
+GRANT USAGE ON PROCEDURE SI_CHOP.CHOP_SNOW_INTELLIGENCE.BATCH_EXTRACT_PRESCRIPTION_ENTITIES(INT)
+    TO ROLE CHOP_snow_intelligence;
+GRANT USAGE ON PROCEDURE SI_CHOP.CHOP_SNOW_INTELLIGENCE.GENERATE_STREAMLIT_APP(VARCHAR)
+    TO ROLE CHOP_snow_intelligence;

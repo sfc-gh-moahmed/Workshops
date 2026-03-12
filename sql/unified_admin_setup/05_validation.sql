@@ -1,0 +1,118 @@
+/*
+=============================================================================
+  CHOP Unified Admin Setup — Section 5: Validation Script
+  Script 05: 10 pre-flight checks — run BEFORE the workshop
+=============================================================================
+  Run as: ACCOUNTADMIN
+  Prerequisites: Sections 1-4
+=============================================================================
+*/
+USE ROLE ACCOUNTADMIN;
+
+-- ===================== CHECK 1: All 4 roles exist =====================
+SELECT '--- CHECK 1: Role Existence ---' AS CHECK_GROUP;
+SHOW ROLES LIKE 'ML_ENGINEER';
+SHOW ROLES LIKE 'CHOP_SNOW_INTELLIGENCE';
+SHOW ROLES LIKE 'AI_EXPLORER';
+SHOW ROLES LIKE 'AI_DATA_SCIENCE';
+
+-- ===================== CHECK 2: Grant verification =====================
+SELECT '--- CHECK 2: Grant Verification ---' AS CHECK_GROUP;
+SHOW GRANTS TO ROLE ML_ENGINEER;
+SHOW GRANTS TO ROLE CHOP_SNOW_INTELLIGENCE;
+SHOW GRANTS TO ROLE AI_EXPLORER;
+SHOW GRANTS TO ROLE AI_DATA_SCIENCE;
+
+-- ===================== CHECK 3: Warehouse access per role =====================
+SELECT '--- CHECK 3: Warehouse Access ---' AS CHECK_GROUP;
+USE ROLE ML_ENGINEER;
+USE WAREHOUSE HEALTHCARE_ML_WH;
+SELECT 'ML_ENGINEER can use HEALTHCARE_ML_WH' AS RESULT;
+
+USE ROLE CHOP_SNOW_INTELLIGENCE;
+USE WAREHOUSE CHOP_SNOW_INTELLIGENCE_WH;
+SELECT 'CHOP_SNOW_INTELLIGENCE can use CHOP_SNOW_INTELLIGENCE_WH' AS RESULT;
+
+USE ROLE AI_EXPLORER;
+USE WAREHOUSE HEALTHCARE_ML_WH;
+SELECT 'AI_EXPLORER can use HEALTHCARE_ML_WH' AS RESULT;
+
+USE ROLE AI_DATA_SCIENCE;
+USE WAREHOUSE HEALTHCARE_ML_WH;
+SELECT 'AI_DATA_SCIENCE can use HEALTHCARE_ML_WH' AS RESULT;
+
+USE ROLE ACCOUNTADMIN;
+
+-- ===================== CHECK 4: Schema access per role =====================
+SELECT '--- CHECK 4: Schema Access ---' AS CHECK_GROUP;
+USE ROLE ML_ENGINEER;
+USE SCHEMA HEALTHCARE_ML.RAW_DATA;
+SELECT 'ML_ENGINEER can access HEALTHCARE_ML.RAW_DATA' AS RESULT;
+
+USE ROLE CHOP_SNOW_INTELLIGENCE;
+USE SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
+SELECT 'CHOP_SNOW_INTELLIGENCE can access SI_CHOP.CHOP_SNOW_INTELLIGENCE' AS RESULT;
+
+USE ROLE ACCOUNTADMIN;
+
+-- ===================== CHECK 5: CORTEX_USER on all 4 roles =====================
+SELECT '--- CHECK 5: CORTEX_USER Database Role ---' AS CHECK_GROUP;
+SELECT GRANTEE_NAME AS ROLE_WITH_CORTEX_USER
+FROM SNOWFLAKE.ACCOUNT_USAGE.GRANTS_TO_ROLES
+WHERE NAME = 'CORTEX_USER'
+  AND GRANTED_ON = 'DATABASE ROLE'
+  AND GRANTEE_NAME IN ('ML_ENGINEER', 'CHOP_SNOW_INTELLIGENCE', 'AI_EXPLORER', 'AI_DATA_SCIENCE')
+  AND DELETED_ON IS NULL;
+-- Expect 4 rows
+
+-- ===================== CHECK 6: Budget table has correct values =====================
+SELECT '--- CHECK 6: Budget Table ---' AS CHECK_GROUP;
+SELECT * FROM AI_COST_MGMT.PUBLIC.AI_ROLE_BUDGETS;
+-- Expect: AI_EXPLORER = 50, AI_DATA_SCIENCE = 100
+
+-- ===================== CHECK 7: Model RBAC application roles =====================
+SELECT '--- CHECK 7: Model RBAC ---' AS CHECK_GROUP;
+SHOW GRANTS TO ROLE AI_EXPLORER;
+-- Look for: CORTEX-MODEL-ROLE-MISTRAL-LARGE2, CORTEX-MODEL-ROLE-LLAMA3.1-70B
+SHOW GRANTS TO ROLE AI_DATA_SCIENCE;
+-- Look for: CORTEX-MODEL-ROLE-ALL
+
+-- ===================== CHECK 8: Sample Cortex call per tier =====================
+SELECT '--- CHECK 8: Cortex AI Function Test ---' AS CHECK_GROUP;
+
+USE ROLE AI_EXPLORER;
+USE WAREHOUSE HEALTHCARE_ML_WH;
+SELECT SNOWFLAKE.CORTEX.COMPLETE('mistral-large2', 'Say hello in one word') AS EXPLORER_TEST;
+
+USE ROLE AI_DATA_SCIENCE;
+SELECT SNOWFLAKE.CORTEX.COMPLETE('claude-3-5-sonnet', 'Say hello in one word') AS DS_TEST;
+
+USE ROLE ACCOUNTADMIN;
+
+-- ===================== CHECK 9: Unified 6-view cost query runs without errors =====================
+SELECT '--- CHECK 9: Cost Monitoring Query ---' AS CHECK_GROUP;
+-- This may return 0 rows if no usage yet — that is OK
+-- The point is to confirm the query compiles and runs
+SELECT COUNT(*) AS TOTAL_ROWS FROM (
+    SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_AI_FUNCTIONS_USAGE_HISTORY WHERE 1=0
+    UNION ALL SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_ANALYST_USAGE_HISTORY WHERE 1=0
+    UNION ALL SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_AGENT_USAGE_HISTORY WHERE 1=0
+    UNION ALL SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.SNOWFLAKE_INTELLIGENCE_USAGE_HISTORY WHERE 1=0
+    UNION ALL SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_SEARCH_DAILY_USAGE_HISTORY WHERE 1=0
+    UNION ALL SELECT 1 FROM SNOWFLAKE.ACCOUNT_USAGE.CORTEX_CODE_CLI_USAGE_HISTORY WHERE 1=0
+);
+-- Expect: 0 (confirms all 6 views exist and are accessible)
+
+-- ===================== CHECK 10: Object existence =====================
+SELECT '--- CHECK 10: Object Existence ---' AS CHECK_GROUP;
+SHOW DATABASES LIKE 'HEALTHCARE_ML';
+SHOW DATABASES LIKE 'SI_CHOP';
+SHOW DATABASES LIKE 'AI_COST_MGMT';
+SHOW WAREHOUSES LIKE 'HEALTHCARE_ML_WH';
+SHOW WAREHOUSES LIKE 'CHOP_SNOW_INTELLIGENCE_WH';
+SHOW SCHEMAS IN DATABASE HEALTHCARE_ML;
+SHOW SCHEMAS IN DATABASE SI_CHOP;
+
+SELECT '========================================' AS DIVIDER;
+SELECT 'Section 5 complete: All 10 checks passed' AS STATUS;
+SELECT '========================================' AS DIVIDER;

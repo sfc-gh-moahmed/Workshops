@@ -1,0 +1,71 @@
+/*
+=============================================================================
+  CHOP Infrastructure Setup Guide — Section 5: SI Cortex Search Services
+  Script 04: 2 search services (Drug Catalog + Prescription Directions)
+=============================================================================
+  Run as: ACCOUNTADMIN
+  Prerequisites: 01_si_infrastructure.sql (views must exist with data)
+  File ref: example_chop/for_the_customer/02_cortex_search_chop.sql
+=============================================================================
+*/
+USE ROLE ACCOUNTADMIN;
+USE SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
+USE WAREHOUSE CHOP_snow_intelligence_WH;
+
+-- CORTEX SEARCH 1: Drug Catalog Search
+CREATE OR REPLACE CORTEX SEARCH SERVICE SI_CHOP.CHOP_SNOW_INTELLIGENCE.DRUG_CATALOG_SEARCH
+    ON SEARCH_TEXT
+    WAREHOUSE = CHOP_snow_intelligence_WH
+    TARGET_LAG = '1 day'
+    COMMENT = 'Search service for CHOP drug catalog - natural language drug lookup'
+AS (
+    SELECT
+        DRUGPRODUCTCODE AS DRUG_PRODUCT_CODE,
+        DRUGDESCRIPTION AS DRUG_NAME,
+        NDC AS NDC_CODE,
+        DRUGPRODUCTCATEGORY AS DRUG_CATEGORY,
+        ADMINROUTE AS ADMIN_ROUTE,
+        DOSAGEFREQUENCY AS DOSAGE_FREQUENCY,
+        DOSEUOM AS DOSE_UNIT,
+        CONCAT(COALESCE(DRUGDESCRIPTION, ''), ' ',
+               COALESCE(NDC, ''), ' ',
+               COALESCE(DRUGPRODUCTCATEGORY, ''), ' ',
+               COALESCE(ADMINROUTE, ''), ' ',
+               COALESCE(DOSAGEFREQUENCY, '')) AS SEARCH_TEXT
+    FROM SI_CHOP.CHOP_SNOW_INTELLIGENCE.V_PHARMACY_ALLMEDICALSCRIPTS
+    WHERE DRUGDESCRIPTION IS NOT NULL
+    GROUP BY DRUGPRODUCTCODE, DRUGDESCRIPTION, NDC, DRUGPRODUCTCATEGORY,
+             ADMINROUTE, DOSAGEFREQUENCY, DOSEUOM
+);
+
+-- CORTEX SEARCH 2: Prescription Directions Search
+CREATE OR REPLACE CORTEX SEARCH SERVICE
+    SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_DIRECTIONS_SEARCH
+    ON SEARCH_TEXT
+    WAREHOUSE = CHOP_snow_intelligence_WH
+    TARGET_LAG = '1 day'
+    COMMENT = 'Search service for prescription administration directions (SIG text)'
+AS (
+    SELECT
+        SCRIPTNUMBER AS SCRIPT_NUMBER,
+        DRUGDESCRIPTION AS DRUG_NAME,
+        ADMINISTRATIONDIRECTIONS AS ADMIN_DIRECTIONS,
+        COMPOUNDINGDIRECTIONS AS COMPOUND_DIRECTIONS,
+        DOSAGEFREQUENCY AS DOSAGE_FREQUENCY,
+        ADMINROUTE AS ADMIN_ROUTE,
+        DOSEDETAILS AS DOSE_DETAILS,
+        DOSEUOM AS DOSE_UNIT,
+        CONCAT(COALESCE(DRUGDESCRIPTION, ''), ' ',
+               COALESCE(ADMINISTRATIONDIRECTIONS, ''), ' ',
+               COALESCE(COMPOUNDINGDIRECTIONS, ''), ' ',
+               COALESCE(DOSAGEFREQUENCY, ''), ' ',
+               COALESCE(ADMINROUTE, '')) AS SEARCH_TEXT
+    FROM SI_CHOP.CHOP_SNOW_INTELLIGENCE.V_PHARMACY_ALLMEDICALSCRIPTS
+    WHERE ADMINISTRATIONDIRECTIONS IS NOT NULL
+);
+
+-- Grant access
+GRANT USAGE ON CORTEX SEARCH SERVICE
+    SI_CHOP.CHOP_SNOW_INTELLIGENCE.DRUG_CATALOG_SEARCH TO ROLE CHOP_snow_intelligence;
+GRANT USAGE ON CORTEX SEARCH SERVICE
+    SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_DIRECTIONS_SEARCH TO ROLE CHOP_snow_intelligence;
