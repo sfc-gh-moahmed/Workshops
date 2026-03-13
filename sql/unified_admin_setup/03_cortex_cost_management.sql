@@ -124,10 +124,11 @@ BEGIN
         EXECUTE IMMEDIATE 'REVOKE ROLE ' || rec.TIER_ROLE || ' FROM USER ' || rec.USER_NAME;
         INSERT INTO AI_COST_MGMT.PUBLIC.AI_ENFORCEMENT_LOG
             (USER_NAME, TIER_ROLE, ACTION, CREDITS_USED, CREDIT_LIMIT)
-        VALUES (:rec.USER_NAME, :rec.TIER_ROLE, 'REVOKED', :rec.TOTAL_CREDITS, :rec.MONTHLY_CREDIT_LIMIT);
+        VALUES (rec.USER_NAME, rec.TIER_ROLE, 'REVOKED', rec.TOTAL_CREDITS, rec.MONTHLY_CREDIT_LIMIT);
     END FOR;
     RETURN :result;
 END;
+
 
 -- =============================================================================
 -- RESET_ALL_AI_ACCESS — Monthly re-grant of tier roles
