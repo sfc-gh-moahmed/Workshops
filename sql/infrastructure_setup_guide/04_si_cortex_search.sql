@@ -16,7 +16,7 @@ USE WAREHOUSE CHOP_snow_intelligence_WH;
 CREATE OR REPLACE CORTEX SEARCH SERVICE SI_CHOP.CHOP_SNOW_INTELLIGENCE.DRUG_CATALOG_SEARCH
     ON SEARCH_TEXT
     WAREHOUSE = CHOP_snow_intelligence_WH
-    TARGET_LAG = '1 day'
+    TARGET_LAG = '30 days'
     COMMENT = 'Search service for CHOP drug catalog - natural language drug lookup'
 AS (
     SELECT
@@ -43,7 +43,7 @@ CREATE OR REPLACE CORTEX SEARCH SERVICE
     SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_DIRECTIONS_SEARCH
     ON SEARCH_TEXT
     WAREHOUSE = CHOP_snow_intelligence_WH
-    TARGET_LAG = '1 day'
+    TARGET_LAG = '30 days'
     COMMENT = 'Search service for prescription administration directions (SIG text)'
 AS (
     SELECT
