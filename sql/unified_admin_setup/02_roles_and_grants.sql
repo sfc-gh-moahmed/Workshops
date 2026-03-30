@@ -77,9 +77,12 @@ GRANT CREATE STAGE ON SCHEMA
     HEALTHCARE_ML.INFERENCE TO ROLE ML_ENGINEER;
 
 -- Git Repo (read-only)
-GRANT READ ON GIT REPOSITORY
-    HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO
-    TO ROLE ML_ENGINEER;
+-- NOTE: This grant runs AFTER the git repo is created in
+-- infrastructure_setup_guide/10_ml_git_integration.sql.
+-- It will fail here because the repo object doesn't exist yet.
+-- GRANT READ ON GIT REPOSITORY
+--     HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO
+--     TO ROLE ML_ENGINEER;
 
 -- =====================================================
 -- CHOP_SNOW_INTELLIGENCE — Restricted Grants
