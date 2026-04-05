@@ -274,43 +274,17 @@ SELECT SNOWFLAKE.CORTEX.COMPLETE(
 
 ---
 
-## Cortex Code Bridge — Notebook Cell 5 (~5 min, SE-led)
+## Cortex Code Bridge — Build & Deploy Your Agent (~5 min, SE-led)
 
-> **SE:** Open your terminal with `coco` (Cortex Code CLI). Type this prompt live — participants watch.
-
-```
-I have these objects in SI_CHOP.CHOP_SNOW_INTELLIGENCE:
-
-- PRESCRIPTION_ORDERS_SV: semantic view on pharmacy prescriptions
-  (facts: script_number, costs, quantities; dimensions: drug, route, SIG)
-- MEDICATION_ORDERS_SV: semantic view on Epic medication orders
-- DRUG_CATALOG_SEARCH: Cortex Search on drug catalog (name, NDC, category)
-- PRESCRIPTION_DIRECTIONS_SEARCH: Cortex Search on SIG free text
-- EXTRACT_PRESCRIPTION_ENTITIES(VARCHAR): UDF that calls AI_EXTRACT on SIG
-- GENERATE_STREAMLIT_APP(VARCHAR): procedure for Streamlit dashboards
-
-Generate the SQL to CREATE a Cortex Agent that uses all 6 as tools
-and can answer pharmacy questions in natural language.
-```
-
-> **After coco generates the spec:**
-> 1. Point out the `tool_spec` array — 4 tool types (analyst, search, generic)
-> 2. Show `EXTRACT_PRESCRIPTION_ENTITIES` in the spec — same UDF from Cell 2
-> 3. Open `sql/infrastructure_setup_guide/06_si_agent_creation.sql` side-by-side
-> 4. Say: **"This is exactly what we pre-deployed. Now — let's each deploy our own version."**
-
----
-
-## Deploy Your Own Agent — Personal coco Prompt
-
-> **SE:** Each participant (and you) now runs this second prompt in coco. The username suffix prevents anyone from accidentally overwriting the shared production agent.
+> **SE:** Run Prompt 1 live in your `coco` terminal — participants watch. Then everyone (including you) runs Prompt 2 themselves.
 
 <div class="columns">
 <div class="col">
 
-**Prompt 1 — Generate the spec** *(already done on previous slide)*
+**Prompt 1 — Generate the spec** *(SE runs live)*
 ```
-I have these objects in SI_CHOP.CHOP_SNOW_INTELLIGENCE:
+I have these objects in
+SI_CHOP.CHOP_SNOW_INTELLIGENCE:
 - PRESCRIPTION_ORDERS_SV (semantic view)
 - MEDICATION_ORDERS_SV (semantic view)
 - DRUG_CATALOG_SEARCH (Cortex Search)
@@ -318,14 +292,15 @@ I have these objects in SI_CHOP.CHOP_SNOW_INTELLIGENCE:
 - EXTRACT_PRESCRIPTION_ENTITIES(VARCHAR) (UDF)
 - GENERATE_STREAMLIT_APP(VARCHAR) (procedure)
 
-Generate the SQL to CREATE a Cortex Agent that uses
-all 6 as tools for pharmacy questions.
+Generate SQL to CREATE a Cortex Agent
+using all 6 as tools for pharmacy questions.
 ```
+> Point out `tool_spec` array. Open `06_si_agent_creation.sql` side-by-side — identical structure.
 
 </div>
 <div class="col">
 
-**Prompt 2 — Deploy it safely** *(new — participants run this)*
+**Prompt 2 — Deploy your own copy** *(everyone runs this)*
 ```
 Take the CREATE AGENT SQL you just generated.
 Before running it, make two changes:
@@ -336,16 +311,13 @@ Before running it, make two changes:
      CHOP_Pharmacy_Intelligence_Agent_[ASK ME
      FOR MY SNOWFLAKE USERNAME]
 
-2. Execute the modified SQL in my Snowflake
-   account to create my personal agent.
+2. Execute the modified SQL in my
+   Snowflake account.
 
-This avoids overwriting the shared production
-agent already deployed for the workshop.
+This keeps my agent separate from the
+shared production agent.
 ```
-
-> **Result:** Each person ends up with their own agent, e.g.
-> `CHOP_Pharmacy_Intelligence_Agent_JSMITH`
-> visible in **Snowsight → Agents**.
+> Result: each person gets their own agent, e.g. `CHOP_Pharmacy_Intelligence_Agent_JSMITH`, visible in **Snowsight → Agents**.
 
 </div>
 </div>
