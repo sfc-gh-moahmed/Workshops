@@ -85,3 +85,7 @@ $$;
 
 GRANT USAGE ON AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
     TO ROLE CHOP_snow_intelligence;
+
+-- ML_ENGINEER grant added for workshop participation (AISQL + SI demo)
+GRANT USAGE ON AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
+    TO ROLE ML_ENGINEER;

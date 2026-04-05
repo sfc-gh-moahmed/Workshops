@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHOP Workshop Plan — AISQL + Snowflake Intelligence</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         font-size: 13px; line-height: 1.6; color: #1a1a2e; background: #f8f9fb; }
+  @media print { body { background: #fff; font-size: 11px; }
+                  .no-print { display: none; }
+                  .page-break { page-break-before: always; } }
+
+  .header { background: linear-gradient(135deg, #29b5e8 0%, #0066cc 100%);
+            color: white; padding: 28px 40px 24px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .header .subtitle { font-size: 13px; opacity: 0.9; }
+  .header .meta { margin-top: 12px; display: flex; gap: 24px; font-size: 12px; }
+  .header .meta span { background: rgba(255,255,255,0.2); padding: 3px 10px;
+                        border-radius: 12px; }
+
+  .container { max-width: 1000px; margin: 0 auto; padding: 24px 24px 40px; }
+
+  .section { background: white; border-radius: 8px; margin-bottom: 18px;
+             box-shadow: 0 1px 3px rgba(0,0,0,0.08); overflow: hidden; }
+  .section-header { padding: 14px 20px; display: flex; align-items: center;
+                    gap: 10px; border-bottom: 1px solid #e8ecf0; }
+  .section-header h2 { font-size: 15px; font-weight: 600; }
+  .section-body { padding: 16px 20px; }
+
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 10px;
+           font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .badge-blue  { background: #e3f0ff; color: #0066cc; }
+  .badge-teal  { background: #e0f5f5; color: #00838f; }
+  .badge-green { background: #e6f4ea; color: #1e8e3e; }
+  .badge-orange{ background: #fff3e0; color: #e65100; }
+  .badge-gray  { background: #f0f0f0; color: #555; }
+  .badge-purple{ background: #f3e5f5; color: #7b1fa2; }
+
+  .timeline { display: grid; grid-template-columns: 80px 1fr;
+              gap: 0; margin-bottom: 4px; }
+  .time-col { font-weight: 700; color: #0066cc; font-size: 12px;
+              padding: 6px 8px 6px 0; border-right: 2px solid #e8ecf0; }
+  .content-col { padding: 6px 0 6px 14px; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { background: #f5f7fa; padding: 7px 10px; text-align: left;
+       font-weight: 600; color: #555; border-bottom: 2px solid #e8ecf0; }
+  td { padding: 7px 10px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafbfc; }
+
+  .exercise { border: 1px solid #e8ecf0; border-radius: 6px;
+              margin-bottom: 14px; overflow: hidden; }
+  .exercise-header { padding: 10px 14px; display: flex;
+                     align-items: center; gap: 10px;
+                     background: #f8f9fb; border-bottom: 1px solid #e8ecf0; }
+  .exercise-number { width: 26px; height: 26px; border-radius: 50%;
+                     background: #0066cc; color: white; font-size: 12px;
+                     font-weight: 700; display: flex; align-items: center;
+                     justify-content: center; flex-shrink: 0; }
+  .exercise-title { font-weight: 600; font-size: 13px; }
+  .exercise-body { padding: 12px 14px; }
+
+  .role-block { display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+                margin-top: 10px; }
+  .role-card { border: 1px solid #e8ecf0; border-radius: 6px;
+               padding: 10px 12px; font-size: 12px; }
+  .role-card .role-label { font-weight: 600; margin-bottom: 6px;
+                           font-size: 11px; text-transform: uppercase;
+                           letter-spacing: 0.5px; }
+
+  code { background: #f4f4f8; border: 1px solid #e0e0e8; border-radius: 4px;
+         padding: 1px 5px; font-family: 'SF Mono', Consolas, monospace;
+         font-size: 11.5px; color: #c7254e; }
+  pre { background: #1e1e2e; color: #cdd6f4; border-radius: 6px;
+        padding: 12px 14px; font-family: 'SF Mono', Consolas, monospace;
+        font-size: 11.5px; line-height: 1.5; overflow-x: auto;
+        margin-top: 8px; }
+  pre .comment { color: #6c7086; }
+  pre .keyword { color: #89b4fa; }
+  pre .string  { color: #a6e3a1; }
+
+  .check-list { list-style: none; padding: 0; }
+  .check-list li { padding: 4px 0; padding-left: 20px; position: relative; }
+  .check-list li::before { content: '✓'; position: absolute; left: 0;
+                            color: #1e8e3e; font-weight: 700; }
+  .check-list li.warn::before { content: '!'; color: #e65100; }
+
+  .callout { border-radius: 6px; padding: 10px 14px; margin: 10px 0;
+             font-size: 12px; }
+  .callout-blue  { background: #e8f0fe; border-left: 3px solid #0066cc; }
+  .callout-green { background: #e6f4ea; border-left: 3px solid #1e8e3e; }
+  .callout-orange{ background: #fff3e0; border-left: 3px solid #f9ab00; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .info-row { display: flex; justify-content: space-between; padding: 5px 0;
+              border-bottom: 1px dashed #e8ecf0; font-size: 12px; }
+  .info-row:last-child { border-bottom: none; }
+  .info-label { color: #666; }
+  .info-value { font-weight: 600; }
+
+  .step-list { counter-reset: steps; list-style: none; padding: 0; }
+  .step-list li { counter-increment: steps; padding: 6px 0 6px 32px;
+                  position: relative; border-bottom: 1px solid #f0f0f0; }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before { content: counter(steps); position: absolute; left: 0;
+                           width: 22px; height: 22px; background: #29b5e8;
+                           color: white; border-radius: 50%; font-size: 11px;
+                           font-weight: 700; display: flex; align-items: center;
+                           justify-content: center; top: 7px; }
+
+  .arch-diagram { background: #1e1e2e; color: #cdd6f4; border-radius: 8px;
+                  padding: 16px; font-family: monospace; font-size: 11.5px;
+                  line-height: 1.7; overflow-x: auto; }
+
+  hr.divider { border: none; border-top: 1px solid #e8ecf0; margin: 14px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CHOP Workshop — AISQL + Snowflake Intelligence</h1>
+  <div class="subtitle">SE Reference Guide &amp; Workshop Agenda</div>
+  <div class="meta">
+    <span>2 hours</span>
+    <span>2 roles: Analysts + Scientists</span>
+    <span>3 projects: SI &bull; ML &bull; Cost Governance</span>
+    <span>Audience: CHOP Data &amp; Analytics team</span>
+  </div>
+</div>
+
+<div class="container">
+
+<!-- =========================================================== -->
+<!-- PRE-WORKSHOP PREP -->
+<!-- =========================================================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge badge-orange">Pre-Workshop</span>
+    <h2>Pre-Workshop Checklist (1 week before)</h2>
+  </div>
+  <div class="section-body">
+    <div class="callout callout-orange">
+      <strong>Admin completes these steps before participants can run the readiness check.</strong>
+      Run scripts in order from <code>sql/infrastructure_setup_guide/</code> in the GitHub repo.
+    </div>
+    <br>
+    <div class="two-col">
+      <div>
+        <strong>Admin Setup (scripts 00–12)</strong>
+        <ol class="step-list" style="margin-top:10px">
+          <li>Admin runs <code>00_pre_flight_column_check.sql</code> — pastes all 3 result sets to SE. SE fixes column names in <code>01_si_infrastructure.sql</code>, pushes corrected script.</li>
+          <li>Run scripts 01–12 in order (skip 02, 13). See admin-routine memory for full sequence.</li>
+          <li>After script 10: run standalone grant:<br><code>GRANT READ ON GIT REPOSITORY ... TO ROLE ML_ENGINEER;</code></li>
+        </ol>
+      </div>
+      <div>
+        <strong>Participant Readiness Check</strong>
+        <ol class="step-list" style="margin-top:10px">
+          <li>SE sends participants <code>sql/CHOP_participant_readiness_check.sql</code> (in Git repo).</li>
+          <li>Analysts run Section A, Scientists run Section B — each takes &lt;30 seconds.</li>
+          <li>Participants screenshot results and send to SE by EOD the day before.</li>
+          <li>SE resolves any FAIL rows with admin. Zero surprises on workshop day.</li>
+        </ol>
+      </div>
+    </div>
+
+    <hr class="divider">
+    <strong>Quick Reference — Roles &amp; Warehouses</strong>
+    <table style="margin-top:10px">
+      <tr><th>Role</th><th>Audience</th><th>Warehouse</th><th>Data access</th></tr>
+      <tr>
+        <td><code>CHOP_SNOW_INTELLIGENCE</code></td>
+        <td>Data Analysts</td>
+        <td><code>CHOP_SNOW_INTELLIGENCE_WH</code></td>
+        <td>SI_CHOP views, semantic views, search services, agent</td>
+      </tr>
+      <tr>
+        <td><code>ML_ENGINEER</code></td>
+        <td>Data Scientists</td>
+        <td><code>HEALTHCARE_ML_WH</code></td>
+        <td>HEALTHCARE_ML tables, feature store, model registry, Git repo, agent</td>
+      </tr>
+      <tr>
+        <td><code>AI_EXPLORER</code></td>
+        <td>Exploratory users</td>
+        <td>either</td>
+        <td>$50/month Cortex spend budget enforced hourly</td>
+      </tr>
+      <tr>
+        <td><code>AI_DATA_SCIENCE</code></td>
+        <td>Power users</td>
+        <td>either</td>
+        <td>$100/month Cortex spend budget enforced hourly</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- =========================================================== -->
+<!-- SESSION OVERVIEW -->
+<!-- =========================================================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge badge-blue">Overview</span>
+    <h2>Session Overview — 2 hours</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>Time</th><th>Block</th><th>Format</th><th>Who drives</th></tr>
+      <tr>
+        <td><strong>0:00–0:05</strong></td>
+        <td>Welcome + env check (Cell 1 of notebook)</td>
+        <td>Everyone runs Cell 1 — confirms readiness</td>
+        <td>SE facilitates</td>
+      </tr>
+      <tr>
+        <td><strong>0:05–0:30</strong></td>
+        <td>SE walkthrough — AISQL concepts</td>
+        <td>SE presents; participants follow on screen</td>
+        <td>SE</td>
+      </tr>
+      <tr>
+        <td><strong>0:30–1:00</strong></td>
+        <td>Hands-on AISQL exercises (Cells 2–4)</td>
+        <td>Participants run notebook; SE answers questions</td>
+        <td>Participants</td>
+      </tr>
+      <tr>
+        <td><strong>0:55–1:00</strong></td>
+        <td>Cortex Code bridge (Cell 5)</td>
+        <td>SE uses coco CLI live to generate agent spec</td>
+        <td>SE + coco</td>
+      </tr>
+      <tr>
+        <td style="color:#e65100"><strong>1:00–1:10</strong></td>
+        <td colspan="3" style="color:#e65100"><strong>Break (10 min)</strong></td>
+      </tr>
+      <tr>
+        <td><strong>1:10–1:20</strong></td>
+        <td>coco output vs pre-built agent — side by side</td>
+        <td>SE compares coco-generated SQL to <code>06_si_agent_creation.sql</code></td>
+        <td>SE</td>
+      </tr>
+      <tr>
+        <td><strong>1:20–1:40</strong></td>
+        <td>Live agent demo (Cell 6 call sheet)</td>
+        <td>Each analyst submits 1 question; SE types it; all see the response</td>
+        <td>Participants + SE</td>
+      </tr>
+      <tr>
+        <td><strong>1:40–2:00</strong></td>
+        <td>Architecture + Q&amp;A</td>
+        <td>Whiteboard walkthrough; scientists bridge to ML readmission agent concept</td>
+        <td>SE</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- =========================================================== -->
+<!-- AISQL BLOCK -->
+<!-- =========================================================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge badge-teal">AISQL Block</span>
+    <h2>Hands-On Exercises — Cells 2–4 (notebook)</h2>
+  </div>
+  <div class="section-body">
+
+    <div class="callout callout-blue">
+      <strong>Both roles can participate in all three exercises.</strong>
+      Each exercise has: (A) an inline text version that works for everyone,
+      and (B) a role-specific table version. The notebook auto-detects the role
+      and runs the right version.
+    </div>
+
+    <!-- Exercise 1 -->
+    <div class="exercise" style="margin-top:14px">
+      <div class="exercise-header">
+        <div class="exercise-number">1</div>
+        <div>
+          <div class="exercise-title">AI_EXTRACT — Extraction patterns &amp; transformation workflows</div>
+          <div style="margin-top:3px; display:flex; gap:8px">
+            <span class="badge badge-teal">Cell 2</span>
+            <span class="badge badge-gray">~10 min</span>
+          </div>
+        </div>
+      </div>
+      <div class="exercise-body">
+        <p><strong>Concept:</strong> AI_EXTRACT turns unstructured clinical text into a structured JSON object. You define what fields to pull — the LLM finds them. Fields not present in the text are simply omitted.</p>
+        <br>
+        <p><strong>Part A — inline text (both roles run this first):</strong></p>
+        <pre>SELECT SNOWFLAKE.CORTEX.AI_EXTRACT(
+  <span class="string">'Administer methotrexate 25mg subcutaneously once weekly.
+   Monitor LFTs monthly. Hold if WBC &lt; 3.0.'</span>,
+  [<span class="string">'medication_name'</span>, <span class="string">'dose'</span>, <span class="string">'route'</span>, <span class="string">'frequency'</span>,
+   <span class="string">'monitoring_instructions'</span>, <span class="string">'hold_condition'</span>]
+) AS extracted_entities;</pre>
+
+        <div class="role-block">
+          <div class="role-card">
+            <div class="role-label" style="color:#0066cc">Analysts — Part B</div>
+            Extract from <code>ADMINISTRATIONDIRECTIONS</code> column in <code>V_PHARMACY_ALLMEDICALSCRIPTS</code>. Real CHOP pharmacy SIG text. Compare AI output to what your SIG parsing already captures.
+          </div>
+          <div class="role-card">
+            <div class="role-label" style="color:#7b1fa2">Scientists — Part B</div>
+            Build a clinical narrative string from <code>PRIMARY_DIAGNOSIS</code>, <code>DISCHARGE_DISPOSITION</code>, <code>LENGTH_OF_STAY</code> columns, then extract clinical summary entities. Shows: structured data → narrative → extraction pattern.
+          </div>
+        </div>
+
+        <br>
+        <p><strong>SE talking point:</strong> This is the same UDF (<code>EXTRACT_PRESCRIPTION_ENTITIES</code>) that the SI agent calls as a tool. In the agent, analysts trigger this by just asking a question — no SQL required.</p>
+      </div>
+    </div>
+
+    <!-- Exercise 2 -->
+    <div class="exercise">
+      <div class="exercise-header">
+        <div class="exercise-number">2</div>
+        <div>
+          <div class="exercise-title">AI_CLASSIFY — Guardrails &amp; quality evaluation</div>
+          <div style="margin-top:3px; display:flex; gap:8px">
+            <span class="badge badge-teal">Cell 3</span>
+            <span class="badge badge-gray">~8 min</span>
+          </div>
+        </div>
+      </div>
+      <div class="exercise-body">
+        <p><strong>Concept:</strong> Classify free text against a controlled set of labels you define. Use as a guardrail to catch mis-labeled or ambiguous values before they enter downstream tables.</p>
+        <br>
+        <p><strong>Part A — inline text (both roles):</strong></p>
+        <pre>SELECT SNOWFLAKE.CORTEX.AI_CLASSIFY(
+  <span class="string">'infuse 500ml normal saline over 4 hours through peripheral IV line'</span>,
+  [<span class="string">'oral'</span>, <span class="string">'intravenous'</span>, <span class="string">'intramuscular'</span>, <span class="string">'subcutaneous'</span>,
+   <span class="string">'topical'</span>, <span class="string">'inhaled'</span>, <span class="string">'other'</span>]
+) AS route_classification;</pre>
+
+        <div class="role-block">
+          <div class="role-card">
+            <div class="role-label" style="color:#0066cc">Analysts — Part B</div>
+            Classify <code>ADMINISTRATIONDIRECTIONS</code> and compare to stored <code>ADMINROUTE</code> column. Where they disagree = your data quality signal. How often does the stored value mismatch?
+          </div>
+          <div class="role-card">
+            <div class="role-label" style="color:#7b1fa2">Scientists — Part B</div>
+            Classify <code>DISCHARGE_DISPOSITION</code> (HOME, SNF, AMA…) into readmission risk tiers and compare to actual <code>READMITTED_30D</code> outcome. Discussion: LLM classification vs hand-engineered <code>DISPOSITION_RISK_SCORE</code> — when does each win?
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Exercise 3 -->
+    <div class="exercise">
+      <div class="exercise-header">
+        <div class="exercise-number">3</div>
+        <div>
+          <div class="exercise-title">AI_FILTER + COMPLETE — Quality gates &amp; transformation</div>
+          <div style="margin-top:3px; display:flex; gap:8px">
+            <span class="badge badge-teal">Cell 4</span>
+            <span class="badge badge-gray">~7 min</span>
+          </div>
+        </div>
+      </div>
+      <div class="exercise-body">
+        <p><strong>Concept:</strong> <code>AI_FILTER</code> returns True/False — use it in a <code>WHERE</code> clause to gate low-quality records before extraction. <code>COMPLETE</code> is the transformation function — rewrite, standardize, enrich.</p>
+        <br>
+        <p><strong>Both roles run the same cells (no table access needed):</strong></p>
+        <pre><span class="comment">-- Gate: only extract from complete, actionable SIG text</span>
+SELECT SNOWFLAKE.CORTEX.AI_FILTER(
+  <span class="string">'take as needed'</span>,
+  <span class="string">'A complete prescription with dose, frequency, and route'</span>
+) AS passes_quality_gate;
+<span class="comment">-- Returns FALSE → discard this record</span>
+
+<span class="comment">-- Transform: standardize an informal clinical note</span>
+SELECT SNOWFLAKE.CORTEX.COMPLETE(
+  <span class="string">'llama3.1-70b'</span>,
+  <span class="string">'Standardize to clinical format with dose, route, frequency,
+   duration, monitoring: "give 2 tabs twice a day with food for 2 weeks, watch liver"'</span>
+) AS standardized_note;</pre>
+
+        <p style="margin-top:8px"><strong>SE talking point:</strong> The pipeline pattern is: AI_FILTER → AI_EXTRACT on passing records only → store structured output. Quality gating before extraction reduces LLM cost and prevents garbage data from entering your feature store or semantic views.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- =========================================================== -->
+<!-- COCO BRIDGE -->
+<!-- =========================================================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge badge-purple">coco Bridge</span>
+    <h2>Cortex Code Moment — Cell 5 (SE-led, ~5 min before break)</h2>
+  </div>
+  <div class="section-body">
+    <div class="callout callout-blue">
+      <strong>Goal:</strong> Connect the AISQL exercises to the SI agent demo.
+      SE types a prompt into the coco CLI live — coco generates the
+      <code>CREATE AGENT</code> SQL spec. Then SE reveals the pre-built agent is
+      essentially the same spec, already deployed.
+    </div>
+    <br>
+    <p><strong>coco prompt to type live:</strong></p>
+    <pre>I have these objects in SI_CHOP.CHOP_SNOW_INTELLIGENCE:
+
+- PRESCRIPTION_ORDERS_SV: semantic view on pharmacy prescriptions
+  (facts: script_number, costs, quantities; dimensions: drug, route, SIG)
+- MEDICATION_ORDERS_SV: semantic view on Epic medication orders
+- DRUG_CATALOG_SEARCH: Cortex Search on drug catalog (name, NDC, category)
+- PRESCRIPTION_DIRECTIONS_SEARCH: Cortex Search on SIG free text
+- EXTRACT_PRESCRIPTION_ENTITIES(VARCHAR): UDF that calls AI_EXTRACT on SIG
+- GENERATE_STREAMLIT_APP(VARCHAR): procedure for Streamlit dashboards
+
+Generate the SQL to CREATE a Cortex Agent that uses all 6 as tools
+and can answer pharmacy questions in natural language.</pre>
+
+    <br>
+    <p><strong>After coco generates the spec:</strong></p>
+    <ul class="check-list">
+      <li>Point out the <code>tool_spec</code> block structure — same 4 tool types used in exercises</li>
+      <li>Show <code>EXTRACT_PRESCRIPTION_ENTITIES</code> in the spec as a generic function tool — this is the same UDF participants called in Cell 2</li>
+      <li>Open <code>06_si_agent_creation.sql</code> side-by-side — "this is exactly what we pre-deployed"</li>
+      <li>Say: "After the break, let's query it."</li>
+    </ul>
+  </div>
+</div>
+
+
+<!-- =========================================================== -->
+<!-- SI BLOCK -->
+<!-- =========================================================== -->
+<div class="section page-break">
+  <div class="section-header">
+    <span class="badge badge-green">SI Block</span>
+    <h2>Snowflake Intelligence Demo — 60 min post-break</h2>
+  </div>
+  <div class="section-body">
+
+    <table style="margin-bottom:16px">
+      <tr><th>Time</th><th>Activity</th><th>SE Notes</th></tr>
+      <tr>
+        <td><strong>+0 min</strong></td>
+        <td>coco output vs deployed agent</td>
+        <td>Side-by-side of coco SQL and <code>06_si_agent_creation.sql</code>. Show they're structurally identical. "coco wrote this in 30 seconds."</td>
+      </tr>
+      <tr>
+        <td><strong>+10 min</strong></td>
+        <td>Live agent questions (Cell 6 call sheet)</td>
+        <td>Each analyst picks one of the 5 call-sheet questions. SE types it in Snowsight Agents. Show the tool trace — which tool was invoked.</td>
+      </tr>
+      <tr>
+        <td><strong>+30 min</strong></td>
+        <td>Architecture walkthrough</td>
+        <td>Walk the diagram below. Emphasize: views cap cost ($13-15/month Cortex Search vs $150 without the filter). Governance: semantic views enforce business logic centrally.</td>
+      </tr>
+      <tr>
+        <td><strong>+50 min</strong></td>
+        <td>Scientists bridge — readmission agent concept</td>
+        <td>"How would you build this for your ML use case?" Walk through: semantic view on ADMISSIONS + FEATURE_STORE, generic function calling READMISSION_PREDICTOR model, natural language question: 'Which patients admitted last week are high risk?'</td>
+      </tr>
+    </table>
+
+    <hr class="divider">
+    <p><strong>Architecture diagram (draw on whiteboard or reference this):</strong></p>
+    <div class="arch-diagram">
+User question (natural language)
+        │
+        ▼
+  Cortex Agent (orchestrator LLM)
+        │
+   ┌────┴──────────────────────────────────────────┐
+   │                      │                        │
+   ▼                      ▼                        ▼
+Cortex Analyst      Cortex Search           Generic Function
+(text-to-SQL)       (semantic fuzzy         (EXTRACT_PRESCRIPTION_ENTITIES
+                     lookup)                 = AI_EXTRACT from Cell 2)
+   │                      │
+   ▼                      ▼
+PRESCRIPTION_ORDERS_SV    DRUG_CATALOG_SEARCH
+MEDICATION_ORDERS_SV      PRESCRIPTION_DIRECTIONS_SEARCH
+   │
+   ▼
+V_PHARMACY_ALLMEDICALSCRIPTS  ← 12-month filter + 50K row cap
+   │                             (cost control: ~$13-15/month)
+   ▼
+PROD.LAKE_HDMS.DS_PHARMACY_ALLMEDICALSCRIPTS  (source of truth)
+    </div>
+
+    <hr class="divider">
+    <p><strong>SI call sheet — 5 questions for the live demo:</strong></p>
+    <table style="margin-top:10px">
+      <tr><th>#</th><th>Question</th><th>Agent tool invoked</th></tr>
+      <tr>
+        <td>1</td>
+        <td><em>"What are the top 10 most prescribed drugs by script count?"</em></td>
+        <td>Cortex Analyst → PRESCRIPTION_ORDERS_SV</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td><em>"Show me all IV-route prescriptions from the last 30 days"</em></td>
+        <td>Cortex Analyst → PRESCRIPTION_ORDERS_SV</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td><em>"Find drugs related to amoxicillin in the drug catalog"</em></td>
+        <td>Cortex Search → DRUG_CATALOG_SEARCH</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td><em>"Extract the medication name and dose from: 'Give 25mg MTX SQ weekly, hold if WBC &lt; 3'"</em></td>
+        <td>Generic function → EXTRACT_PRESCRIPTION_ENTITIES</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td><em>"What therapeutic classes have the most medication orders?"</em></td>
+        <td>Cortex Analyst → MEDICATION_ORDERS_SV</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+
+<!-- =========================================================== -->
+<!-- FILES REFERENCE -->
+<!-- =========================================================== -->
+<div class="section">
+  <div class="section-header">
+    <span class="badge badge-gray">Assets</span>
+    <h2>Files Created / Modified for This Workshop</h2>
+  </div>
+  <div class="section-body">
+    <table>
+      <tr><th>File</th><th>Type</th><th>Purpose</th></tr>
+      <tr>
+        <td><code>healthcare-readmission-ml/notebooks/workshop_aisql_si_exercises.ipynb</code></td>
+        <td><span class="badge badge-teal">New</span></td>
+        <td>Participant notebook — Cells 1–6. Env check, 3 exercises, coco bridge, SI call sheet. Auto-detects role.</td>
+      </tr>
+      <tr>
+        <td><code>sql/CHOP_participant_readiness_check.sql</code></td>
+        <td><span class="badge badge-teal">New</span></td>
+        <td>Send to participants 1 week before. Section A = Analysts, Section B = Scientists. PASS/FAIL output, &lt;30 seconds.</td>
+      </tr>
+      <tr>
+        <td><code>sql/infrastructure_setup_guide/06_si_agent_creation.sql</code></td>
+        <td><span class="badge badge-orange">Modified</span></td>
+        <td>Added: <code>GRANT USAGE ON AGENT ... TO ROLE ML_ENGINEER</code> so scientists can access the agent.</td>
+      </tr>
+      <tr>
+        <td><code>sql/infrastructure_setup_guide/01_si_infrastructure.sql</code></td>
+        <td><span class="badge badge-orange">Modified</span></td>
+        <td>6 views: 12-month rolling filter + 50K row cap. Cost control for Cortex Search (~$13-15/month).</td>
+      </tr>
+      <tr>
+        <td><code>sql/infrastructure_setup_guide/04_si_cortex_search.sql</code></td>
+        <td><span class="badge badge-orange">Modified</span></td>
+        <td>TARGET_LAG changed from <code>'1 day'</code> to <code>'30 days'</code> on both search services.</td>
+      </tr>
+      <tr>
+        <td><code>sql/unified_admin_setup/02_roles_and_grants.sql</code></td>
+        <td><span class="badge badge-orange">Modified</span></td>
+        <td>Git repo grant commented out (moved to script 10 where the repo object actually exists).</td>
+      </tr>
+      <tr>
+        <td><code>sql/infrastructure_setup_guide/00_pre_flight_column_check.sql</code></td>
+        <td><span class="badge badge-teal">New</span></td>
+        <td>3-part admin diagnostic: INFORMATION_SCHEMA column dump, date column profiler, join key validation with anchor join strategy.</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+</div><!-- /container -->
+</body>
+</html>
