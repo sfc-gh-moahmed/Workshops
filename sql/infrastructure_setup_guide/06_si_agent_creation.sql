@@ -6,18 +6,21 @@
   Run as: ACCOUNTADMIN
   Prerequisites: 03_si_semantic_views.sql, 04_si_cortex_search.sql,
                  05_si_functions_and_procedures.sql
+  Agent location: SI_CHOP.CHOP_SNOW_INTELLIGENCE (no SNOWFLAKE_INTELLIGENCE
+                  system database required with current Cortex Agent DDL)
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
 USE SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
 USE WAREHOUSE CHOP_snow_intelligence_WH;
 
-CREATE OR REPLACE AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
-WITH PROFILE = '{ "display_name": "CHOP Pharmacy Intelligence Agent" }'
-    COMMENT = 'CHOP Pharmacy Intelligence Agent - Extracts entities from free-text prescriptions, queries medication orders, and searches drug catalogs'
-FROM SPECIFICATION $$
+CREATE OR REPLACE AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
+FROM SPECIFICATION $spec$
 {
-  "models": { "orchestration": "" },
+  "models": { "orchestration": "auto" },
+  "orchestration": {
+    "budget": { "seconds": 900, "tokens": 400000 }
+  },
   "instructions": {
     "response": "You are a pharmacy data intelligence agent for The Children's Hospital of Philadelphia (CHOP). You help pharmacists, clinicians, and analysts extract structured information from free-text prescription directions (SIG), query medication order data, and search the drug catalog. When extracting entities from prescription text, identify: medication name, dosage amount and unit, frequency, route of administration, duration, and any special instructions. Always provide clear, clinically accurate responses. When presenting data, use tables for readability.",
     "orchestration": "Use the Prescription Orders semantic view for questions about individual prescriptions, dosing details, free-text directions, drug descriptions, NDC codes, and prescription costs. Use the Medication Orders semantic view for questions about Epic medication orders, therapeutic classes, pharmacy classifications, order status, and formulary information. Use the Drug Catalog Search to find specific drugs by name, NDC, or category. Use the Prescription Directions Search to find prescriptions with specific SIG text patterns. Use the Extract Prescription Entities tool to extract structured data from free-text prescription directions. Use the Generate Dashboard tool when users want visual analytics.",
@@ -100,54 +103,66 @@ FROM SPECIFICATION $$
   ],
   "tool_resources": {
     "Query_Prescription_Orders": {
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "CHOP_snow_intelligence_WH"
+      },
       "semantic_view": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_ORDERS_SV"
     },
     "Query_Medication_Orders": {
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "CHOP_snow_intelligence_WH"
+      },
       "semantic_view": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.MEDICATION_ORDERS_SV"
     },
     "Search_Drug_Catalog": {
-      "name": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.DRUG_CATALOG_SEARCH",
-      "id_column": "DRUG_PRODUCT_CODE",
-      "title_column": "DRUG_NAME",
-      "max_results": 10
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "CHOP_snow_intelligence_WH"
+      },
+      "search_service": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.DRUG_CATALOG_SEARCH"
     },
     "Search_Prescription_Directions": {
-      "name": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_DIRECTIONS_SEARCH",
-      "id_column": "SCRIPT_NUMBER",
-      "title_column": "DRUG_NAME",
-      "max_results": 10
+      "execution_environment": {
+        "query_timeout": 299,
+        "type": "warehouse",
+        "warehouse": "CHOP_snow_intelligence_WH"
+      },
+      "search_service": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.PRESCRIPTION_DIRECTIONS_SEARCH"
     },
     "Extract_Prescription_Entities": {
+      "type": "function",
+      "identifier": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES",
       "execution_environment": {
         "query_timeout": 0,
         "type": "warehouse",
         "warehouse": "CHOP_snow_intelligence_WH"
-      },
-      "identifier": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES",
-      "name": "EXTRACT_PRESCRIPTION_ENTITIES(VARCHAR)",
-      "type": "function"
+      }
     },
     "Generate_Streamlit_App": {
+      "type": "procedure",
+      "identifier": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.GENERATE_STREAMLIT_APP",
       "execution_environment": {
         "query_timeout": 0,
         "type": "warehouse",
         "warehouse": "CHOP_snow_intelligence_WH"
-      },
-      "identifier": "SI_CHOP.CHOP_SNOW_INTELLIGENCE.GENERATE_STREAMLIT_APP",
-      "name": "GENERATE_STREAMLIT_APP(VARCHAR)",
-      "type": "procedure"
+      }
     }
   }
 }
-$$;
+$spec$;
 
 -- Grant access
-GRANT USAGE ON AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
+GRANT USAGE ON AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
     TO ROLE PUBLIC;
-GRANT USAGE ON AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
+GRANT USAGE ON AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
     TO ROLE CHOP_snow_intelligence;
 -- ML_ENGINEER grant for workshop participation (AISQL + SI demo)
-GRANT USAGE ON AGENT SNOWFLAKE_INTELLIGENCE.AGENTS.CHOP_Pharmacy_Intelligence_Agent
+GRANT USAGE ON AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
     TO ROLE ML_ENGINEER;
 
 SELECT 'CHOP Pharmacy Intelligence Agent created successfully' AS STATUS;
