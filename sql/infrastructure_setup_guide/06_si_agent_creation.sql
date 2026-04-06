@@ -15,7 +15,7 @@ USE SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
 USE WAREHOUSE CHOP_snow_intelligence_WH;
 
 CREATE OR REPLACE AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
-FROM SPECIFICATION $spec$
+FROM SPECIFICATION $$
 {
   "models": { "orchestration": "auto" },
   "orchestration": {
@@ -154,7 +154,7 @@ FROM SPECIFICATION $spec$
     }
   }
 }
-$spec$;
+$$;
 
 -- Grant access
 GRANT USAGE ON AGENT SI_CHOP.CHOP_SNOW_INTELLIGENCE.CHOP_Pharmacy_Intelligence_Agent
