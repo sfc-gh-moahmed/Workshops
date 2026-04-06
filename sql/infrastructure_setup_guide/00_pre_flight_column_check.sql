@@ -23,7 +23,7 @@
     ALLMEDICALSCRIPTS.SCRIPTNUMBER  <-> DISPENSINGHISTORY.RXNUMBER
     ALLMEDICALSCRIPTS.DRUGPRODUCTCODE <-> PHARMACYDRUG_MASTER.DRUGPRODUCTCODE
     ALLMEDICALSCRIPTS.ACCOUNT       <-> PATIENTPRESCRIPTIONS.ACCOUNT
-    MEDICATION_ORDER_ALL.CSN        <-> ORDER_MED.PAT_ENC_CSN_ID
+    MEDICATION_ORDER_ALL.CSN        <-> ORDER_MED.PAT_ENC_CSN_ID (excluded — ORDER_MED not available)
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
@@ -47,8 +47,8 @@ WHERE TABLE_SCHEMA IN ('LAKE_HDMS', 'SEMANTIC')
       'DS_PHARMACY_PATIENTPRESCRIPTIONS',
       'DS_PHARMACY_DISPENSINGHISTORY',
       'DS_PHARMACYDRUG_MASTER',
-      'MEDICATION_ORDER_ALL',
-      'ORDER_MED'
+      'MEDICATION_ORDER_ALL'
+      -- ORDER_MED excluded: table does not exist / not authorized in PROD.SEMANTIC
   )
 ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;
 
@@ -148,32 +148,8 @@ FROM (
                       THEN 1 END)
     FROM PROD.SEMANTIC.MEDICATION_ORDER_ALL
 
-    UNION ALL
 
-    -- ORDER_MED — ⚠️ TABLE NOT FOUND in INFORMATION_SCHEMA during pre-flight check.
-    -- Verify table exists in PROD.SEMANTIC before running this script.
-    -- Column names below (ORDERING_DATE, ORDER_INST) are unverified — update if needed.
-    -- candidate: ORDERING_DATE
-    SELECT 'ORDER_MED',
-           'ORDERING_DATE',
-           COUNT(*),
-           SUM(CASE WHEN ORDERING_DATE IS NULL THEN 1 ELSE 0 END),
-           MIN(ORDERING_DATE), MAX(ORDERING_DATE),
-           COUNT(CASE WHEN ORDERING_DATE >= DATEADD('month', -12, CURRENT_DATE())
-                      THEN 1 END)
-    FROM PROD.SEMANTIC.ORDER_MED
-
-    UNION ALL
-
-    -- ORDER_MED — alternate: ORDER_INST (timestamp)
-    SELECT 'ORDER_MED',
-           'ORDER_INST',
-           COUNT(*),
-           SUM(CASE WHEN ORDER_INST IS NULL THEN 1 ELSE 0 END),
-           MIN(ORDER_INST), MAX(ORDER_INST),
-           COUNT(CASE WHEN ORDER_INST >= DATEADD('month', -12, CURRENT_DATE())
-                      THEN 1 END)
-    FROM PROD.SEMANTIC.ORDER_MED
+    -- ORDER_MED excluded: table does not exist / not authorized in PROD.SEMANTIC
 
 )
 ORDER BY tbl, last_12m_rows DESC;
@@ -281,21 +257,8 @@ FROM (
     LEFT JOIN PROD.LAKE_HDMS.DS_PHARMACY_PATIENTPRESCRIPTIONS p
            ON a.ACCOUNT = p.ACCOUNT
 
-    UNION ALL
-
     -- JOIN 5: MEDICATION_ORDER_ALL.CSN <-> ORDER_MED.PAT_ENC_CSN_ID
-    SELECT
-        'MEDICATION_ORDER_ALL.CSN -> ORDER_MED.PAT_ENC_CSN_ID',
-        COUNT(DISTINCT mo.CSN),
-        COUNT(DISTINCT CASE WHEN om.PAT_ENC_CSN_ID IS NOT NULL THEN mo.CSN END),
-        COUNT(DISTINCT CASE WHEN mo.MEDICATION_ORDER_CREATE_DATE >= DATEADD('month', -12, CURRENT_DATE())
-                            THEN mo.CSN END),
-        COUNT(DISTINCT CASE WHEN mo.MEDICATION_ORDER_CREATE_DATE >= DATEADD('month', -12, CURRENT_DATE())
-                             AND om.PAT_ENC_CSN_ID IS NOT NULL
-                            THEN mo.CSN END)
-    FROM PROD.SEMANTIC.MEDICATION_ORDER_ALL mo
-    LEFT JOIN PROD.SEMANTIC.ORDER_MED om
-           ON mo.CSN = om.PAT_ENC_CSN_ID
+    -- ORDER_MED excluded: table does not exist / not authorized in PROD.SEMANTIC
 
 )
 ORDER BY match_drop_pct DESC NULLS LAST;
