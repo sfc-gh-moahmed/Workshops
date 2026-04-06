@@ -29,9 +29,10 @@
 USE ROLE ACCOUNTADMIN;
 
 -- =============================================================================
--- PART 1: All DATE / TIMESTAMP columns in the 6 source tables
--- If a column name differs from what the view script expects, you will see it
--- here. Share this output so the SE can correct the view definitions.
+-- PART 1: ALL columns in the 6 source tables (every data type)
+-- Paste this output to your SE before running any other script.
+-- Used to verify ALL column names referenced in scripts 01, 03, 04, 05
+-- and the participant notebook — not just date filter columns.
 -- =============================================================================
 SELECT
     TABLE_SCHEMA,
@@ -48,10 +49,6 @@ WHERE TABLE_SCHEMA IN ('LAKE_HDMS', 'SEMANTIC')
       'DS_PHARMACYDRUG_MASTER',
       'MEDICATION_ORDER_ALL',
       'ORDER_MED'
-  )
-  AND DATA_TYPE IN (
-      'DATE', 'DATETIME',
-      'TIMESTAMP_NTZ', 'TIMESTAMP_LTZ', 'TIMESTAMP_TZ'
   )
 ORDER BY TABLE_SCHEMA, TABLE_NAME, ORDINAL_POSITION;
 
