@@ -5,7 +5,7 @@
 =============================================================================
   Run as: ACCOUNTADMIN
   Prerequisites: 10_ml_git_integration.sql (Git integration must be set up)
-  File ref: healthcare-readmission-ml/production/tasks/setup_tasks.sql
+  File ref: snowflake-workshop-healthcare-readmission-ml/production/tasks/setup_tasks.sql
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
@@ -16,7 +16,7 @@ USE SCHEMA TASKS;
 CREATE OR REPLACE TASK HEALTHCARE_ML.TASKS.GIT_FETCH_TASK
     WAREHOUSE = HEALTHCARE_ML_WH
     SCHEDULE  = '60 MINUTE'
-    COMMENT   = 'Fetch latest code from healthcare-readmission-ml GitHub repo'
+    COMMENT   = 'Fetch latest code from CHOP github.research.chop.edu ML pipeline repo'
 AS
     ALTER GIT REPOSITORY HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO FETCH;
 
