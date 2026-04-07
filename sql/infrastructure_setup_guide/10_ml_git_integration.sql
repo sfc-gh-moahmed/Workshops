@@ -5,8 +5,8 @@
 =============================================================================
   Run as: ACCOUNTADMIN
   Prerequisites: 08_ml_infrastructure.sql
-                 GITHUB_API_INTEGRATION must exist (account-level API integration)
-  File ref: healthcare-readmission-ml/scripts/setup_snowflake_git.sql
+                 GITHUB_RESEARCH_CHOP_EDU_API must exist (account-level API integration)
+  File ref: snowflake-workshop-healthcare-readmission-ml/scripts/setup_snowflake_git.sql
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
@@ -15,8 +15,8 @@ USE SCHEMA GIT_INTEGRATION;
 
 -- Create Git Repository object
 CREATE OR REPLACE GIT REPOSITORY HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO
-    ORIGIN = 'https://github.com/sfc-gh-moahmed/healthcare-readmission-ml.git'
-    API_INTEGRATION = GITHUB_API_INTEGRATION
+    ORIGIN = 'https://github.research.chop.edu/analytics/snowflake-workshop-healthcare-readmission-ml.git'
+    API_INTEGRATION = GITHUB_RESEARCH_CHOP_EDU_API
     COMMENT = 'Healthcare 30-day readmission ML pipeline';
 
 -- Fetch latest code
