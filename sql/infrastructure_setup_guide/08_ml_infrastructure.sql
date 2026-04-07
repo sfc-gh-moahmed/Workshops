@@ -5,7 +5,7 @@
 =============================================================================
   Run as: ACCOUNTADMIN
   Prerequisites: None
-  File ref: healthcare-readmission-ml/scripts/admin_setup_infrastructure.sql
+  File ref: snowflake-workshop-healthcare-readmission-ml/scripts/admin_setup_infrastructure.sql
 =============================================================================
 */
 USE ROLE ACCOUNTADMIN;
