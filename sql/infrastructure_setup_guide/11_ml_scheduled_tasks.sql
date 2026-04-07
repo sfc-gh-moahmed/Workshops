@@ -21,10 +21,10 @@ AS
     ALTER GIT REPOSITORY HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO FETCH;
 
 -- Task 2: BATCH SCORING — Run after each git fetch
+-- NOTE: COMMENT clause omitted — not supported on child tasks with EXECUTE IMMEDIATE FROM
 CREATE OR REPLACE TASK HEALTHCARE_ML.TASKS.BATCH_SCORING_TASK
     WAREHOUSE = HEALTHCARE_ML_WH
     AFTER     HEALTHCARE_ML.TASKS.GIT_FETCH_TASK
-    COMMENT   = 'Run batch inference using latest code from Git repo'
 AS
     EXECUTE IMMEDIATE FROM
         @HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO/branches/main/production/run_batch_inference.py;
