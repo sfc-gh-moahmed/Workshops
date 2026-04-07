@@ -14,30 +14,15 @@ USE DATABASE HEALTHCARE_ML;
 USE SCHEMA GIT_INTEGRATION;
 
 -- =============================================================================
--- STEP 1: Create secret with CHOP GitHub Enterprise PAT
--- Replace <CHOP_GITHUB_USERNAME> and <CHOP_GITHUB_PAT> with real values.
--- The PAT must have read access to the analytics org on github.research.chop.edu.
--- =============================================================================
-CREATE SECRET IF NOT EXISTS HEALTHCARE_ML.GIT_INTEGRATION.CHOP_GITHUB_CREDENTIALS
-    TYPE     = PASSWORD
-    USERNAME = '<CHOP_GITHUB_USERNAME>'
-    PASSWORD = '<CHOP_GITHUB_PAT>'
-    COMMENT  = 'GitHub Enterprise PAT for github.research.chop.edu';
-
--- NOTE: If GITHUB_RESEARCH_CHOP_EDU_API was created with a restricted
--- ALLOWED_AUTHENTICATION_SECRETS list, run this to add the secret:
---
--- ALTER API INTEGRATION GITHUB_RESEARCH_CHOP_EDU_API
---     SET ALLOWED_AUTHENTICATION_SECRETS =
---         (HEALTHCARE_ML.GIT_INTEGRATION.CHOP_GITHUB_CREDENTIALS);
-
--- =============================================================================
--- STEP 2: Create Git Repository object
+-- STEP 1: Create Git Repository object
+-- GIT_CREDENTIALS must reference the existing Snowflake SECRET created by
+-- your DevOps team when GITHUB_RESEARCH_CHOP_EDU_API was set up.
+-- Replace <DEVOPS_MANAGED_SECRET_NAME> with the actual secret name.
 -- =============================================================================
 CREATE OR REPLACE GIT REPOSITORY HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO
     ORIGIN          = 'https://github.research.chop.edu/analytics/snowflake-workshop-healthcare-readmission-ml.git'
     API_INTEGRATION = GITHUB_RESEARCH_CHOP_EDU_API
-    GIT_CREDENTIALS = HEALTHCARE_ML.GIT_INTEGRATION.CHOP_GITHUB_CREDENTIALS
+    GIT_CREDENTIALS = <DEVOPS_MANAGED_SECRET_NAME>
     COMMENT         = 'Healthcare 30-day readmission ML pipeline';
 
 -- Fetch latest code
@@ -48,7 +33,7 @@ SHOW GIT BRANCHES IN HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO;
 LIST @HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO/branches/main/;
 
 -- =============================================================================
--- STEP 3: Create ML_ENGINEER role and grant access
+-- STEP 2: Create ML_ENGINEER role and grant access
 -- =============================================================================
 CREATE ROLE IF NOT EXISTS ML_ENGINEER;
 GRANT USAGE ON DATABASE HEALTHCARE_ML TO ROLE ML_ENGINEER;
