@@ -35,7 +35,7 @@ SELECT 'SI-5' AS CHECK_ID, 'NLP Extraction' AS CHECK_NAME,
         'Take 1 tablet by mouth daily') AS RESULT;
 
 -- SI-6: Agent exists
-SHOW AGENTS IN SCHEMA SNOWFLAKE_INTELLIGENCE.AGENTS;
+SHOW AGENTS IN SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE;
 
 -- =============================================================================
 -- HEALTHCARE ML PRE-FLIGHT CHECKS
