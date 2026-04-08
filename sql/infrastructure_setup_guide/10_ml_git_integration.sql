@@ -33,7 +33,7 @@ SHOW GIT BRANCHES IN HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO;
 LIST @HEALTHCARE_ML.GIT_INTEGRATION.HEALTHCARE_ML_REPO/branches/main/;
 
 -- =============================================================================
--- STEP 2: Create ML_ENGINEER role and grant access
+-- STEP 4: Create ML_ENGINEER role and grant access
 -- =============================================================================
 CREATE ROLE IF NOT EXISTS ML_ENGINEER;
 GRANT USAGE ON DATABASE HEALTHCARE_ML TO ROLE ML_ENGINEER;
