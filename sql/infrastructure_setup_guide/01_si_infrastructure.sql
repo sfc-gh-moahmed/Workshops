@@ -92,6 +92,15 @@ GRANT SELECT ON ALL VIEWS IN SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE
 -- 6. CORTEX AI PERMISSIONS
 GRANT DATABASE ROLE SNOWFLAKE.CORTEX_USER TO ROLE CHOP_snow_intelligence;
 
+-- ==========================================================================
+-- ML_ENGINEER: Mirror SI grants for workshop participation (SI + ML use cases)
+-- ==========================================================================
+GRANT USAGE ON DATABASE SI_CHOP TO ROLE ML_ENGINEER;
+GRANT USAGE ON SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE TO ROLE ML_ENGINEER;
+GRANT USAGE ON WAREHOUSE CHOP_snow_intelligence_WH TO ROLE ML_ENGINEER;
+GRANT SELECT ON ALL VIEWS IN SCHEMA SI_CHOP.CHOP_SNOW_INTELLIGENCE
+    TO ROLE ML_ENGINEER;
+
 -- 7. POST-WORKSHOP: Wire into CHOP hierarchy (Section 6 of unified_admin_setup)
 -- Uncomment after Data Trust approval from Anjita Shetty
 -- GRANT ROLE CHOP_SNOW_INTELLIGENCE
