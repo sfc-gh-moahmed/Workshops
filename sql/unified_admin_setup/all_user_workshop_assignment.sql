@@ -8,7 +8,7 @@
 
   Assigns all 95 April 14th workshop registrants to:
     CHOP_SNOW_INTELLIGENCE  (workshop access — Snowflake Intelligence use case)
-    AI_EXPLORER             (cost governance — $50/month cap)
+    AI_EXPLORER             (cost governance — 50 credits/month cap)
 
   Generated from sign-up form: April 14th workshop (9am–2:30pm)
   Total participants: 95

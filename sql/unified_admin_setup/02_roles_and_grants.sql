@@ -20,11 +20,11 @@ GRANT ROLE CHOP_SNOW_INTELLIGENCE TO ROLE ACCOUNTADMIN;
 
 -- ===================== COST GOVERNANCE ROLES (permanent — survive teardown) =====================
 CREATE ROLE IF NOT EXISTS AI_EXPLORER
-    COMMENT = 'Permanent: Analyst AI tier — cheap models, $50/user/month budget';
+    COMMENT = 'Permanent: Analyst AI tier — cheap models, 50 credits/user/month budget';
 GRANT ROLE AI_EXPLORER TO ROLE ACCOUNTADMIN;
 
 CREATE ROLE IF NOT EXISTS AI_DATA_SCIENCE
-    COMMENT = 'Permanent: Data science AI tier — all models, $100/user/month budget';
+    COMMENT = 'Permanent: Data science AI tier — all models, 100 credits/user/month budget';
 GRANT ROLE AI_DATA_SCIENCE TO ROLE ACCOUNTADMIN;
 
 -- ===================== CORTEX AI ACCESS (all 4 roles) =====================

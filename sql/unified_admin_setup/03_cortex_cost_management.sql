@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS AI_COST_MGMT.PUBLIC.AI_ROLE_BUDGETS (
     PRIMARY KEY (ROLE_NAME)
 );
 
--- Insert budget tiers: $50 for analysts, $100 for data scientists
+-- Insert budget tiers: 50 credits/month for analysts, 100 credits/month for data scientists
 INSERT INTO AI_COST_MGMT.PUBLIC.AI_ROLE_BUDGETS (ROLE_NAME, MONTHLY_CREDIT_LIMIT)
     SELECT 'AI_EXPLORER', 50
     WHERE NOT EXISTS (SELECT 1 FROM AI_COST_MGMT.PUBLIC.AI_ROLE_BUDGETS WHERE ROLE_NAME = 'AI_EXPLORER');
