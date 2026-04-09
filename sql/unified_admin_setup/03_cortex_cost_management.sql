@@ -121,10 +121,17 @@ BEGIN
         WHERE COALESCE(us.TOTAL_CREDITS, 0) > rb.MONTHLY_CREDIT_LIMIT;
 
     FOR rec IN c DO
-        EXECUTE IMMEDIATE 'REVOKE ROLE ' || rec.TIER_ROLE || ' FROM USER ' || rec.USER_NAME;
+        -- Revoke cost governance tier role
+        EXECUTE IMMEDIATE 'REVOKE ROLE ' || :rec.TIER_ROLE || ' FROM USER "' || :rec.USER_NAME || '"';
+        -- Revoke paired workshop role to fully cut off Cortex access
+        IF (:rec.TIER_ROLE = 'AI_EXPLORER') THEN
+            EXECUTE IMMEDIATE 'REVOKE ROLE CHOP_SNOW_INTELLIGENCE FROM USER "' || :rec.USER_NAME || '"';
+        ELSEIF (:rec.TIER_ROLE = 'AI_DATA_SCIENCE') THEN
+            EXECUTE IMMEDIATE 'REVOKE ROLE ML_ENGINEER FROM USER "' || :rec.USER_NAME || '"';
+        END IF;
         INSERT INTO AI_COST_MGMT.PUBLIC.AI_ENFORCEMENT_LOG
             (USER_NAME, TIER_ROLE, ACTION, CREDITS_USED, CREDIT_LIMIT)
-        VALUES (rec.USER_NAME, rec.TIER_ROLE, 'REVOKED', rec.TOTAL_CREDITS, rec.MONTHLY_CREDIT_LIMIT);
+        VALUES (:rec.USER_NAME, :rec.TIER_ROLE, 'REVOKED', :rec.TOTAL_CREDITS, :rec.MONTHLY_CREDIT_LIMIT);
     END FOR;
     RETURN :result;
 END;
@@ -149,12 +156,19 @@ BEGIN
           AND ACTION_TS >= DATEADD('month', -1, CURRENT_TIMESTAMP());
 
     FOR rec IN c DO
+        -- Re-grant cost governance tier role
         EXECUTE IMMEDIATE
           'GRANT ROLE ' || rec.TIER_ROLE
-          || ' TO USER ' || rec.USER_NAME;
+          || ' TO USER "' || rec.USER_NAME || '"';
+        -- Re-grant paired workshop role
+        IF (rec.TIER_ROLE = 'AI_EXPLORER') THEN
+            EXECUTE IMMEDIATE 'GRANT ROLE CHOP_SNOW_INTELLIGENCE TO USER "' || rec.USER_NAME || '"';
+        ELSEIF (rec.TIER_ROLE = 'AI_DATA_SCIENCE') THEN
+            EXECUTE IMMEDIATE 'GRANT ROLE ML_ENGINEER TO USER "' || rec.USER_NAME || '"';
+        END IF;
         INSERT INTO AI_COST_MGMT.PUBLIC.AI_ENFORCEMENT_LOG
           (USER_NAME, TIER_ROLE, ACTION, CREDITS_USED, CREDIT_LIMIT)
-        VALUES (rec.USER_NAME, rec.TIER_ROLE, 'RESET', 0, 0);
+        VALUES (:rec.USER_NAME, :rec.TIER_ROLE, 'RESET', 0, 0);
     END FOR;
     RETURN :result;
 END;
@@ -177,8 +191,8 @@ CREATE OR REPLACE TASK AI_COST_MGMT.PUBLIC.MONTHLY_AI_ACCESS_RESET
     COMMENT   = 'Monthly re-grant of AI tier roles'
 AS CALL AI_COST_MGMT.PUBLIC.RESET_ALL_AI_ACCESS();
 
--- DO NOT resume during workshop
--- ALTER TASK AI_COST_MGMT.PUBLIC.HOURLY_AI_LIMIT_CHECK RESUME;
--- ALTER TASK AI_COST_MGMT.PUBLIC.MONTHLY_AI_ACCESS_RESET RESUME;
+-- Run these after Anjita Shetty approves AD role names (post-workshop)
+ALTER TASK AI_COST_MGMT.PUBLIC.HOURLY_AI_LIMIT_CHECK RESUME;
+ALTER TASK AI_COST_MGMT.PUBLIC.MONTHLY_AI_ACCESS_RESET RESUME;
 
 SELECT 'Section 3 complete' AS STATUS;
