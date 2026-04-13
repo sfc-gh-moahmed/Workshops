@@ -86,17 +86,8 @@ FROM (
         ) AS ai_result
     )
 
-    UNION ALL
-
-    -- A-6: EXTRACT_PRESCRIPTION_ENTITIES UDF (error = UDF not accessible)
-    SELECT 'A-6', 'Custom UDF', 'EXTRACT_PRESCRIPTION_ENTITIES',
-           udf_result::VARCHAR,
-           'auto'
-    FROM (
-        SELECT SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES(
-            'Take 2 tablets by mouth twice daily with food for 14 days'
-        ) AS udf_result
-    )
+    -- A-6: (removed — EXTRACT_PRESCRIPTION_ENTITIES UDF calls AI_EXTRACT internally,
+    --        takes 3-5 min for a single row. Not used in workshop exercises.)
 
     UNION ALL
 

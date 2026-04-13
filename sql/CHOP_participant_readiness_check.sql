@@ -75,16 +75,8 @@ SELECT
         ['oral', 'intravenous', 'subcutaneous', 'topical']
     )::VARCHAR                                                 AS result;
 
--- A-6: EXTRACT_PRESCRIPTION_ENTITIES UDF
--- Expected: returns JSON with medication_name, dosage_amount, frequency, route
--- If this throws an error, the UDF is not accessible — contact SE.
-SELECT
-    'A-6'                                                      AS check_id,
-    'Custom UDF'                                               AS area,
-    'EXTRACT_PRESCRIPTION_ENTITIES'                            AS check_name,
-    SI_CHOP.CHOP_SNOW_INTELLIGENCE.EXTRACT_PRESCRIPTION_ENTITIES(
-        'Take 2 tablets by mouth twice daily with food for 14 days'
-    )::VARCHAR                                                 AS result;
+-- A-6: (removed — EXTRACT_PRESCRIPTION_ENTITIES UDF calls AI_EXTRACT internally,
+--        takes 3-5 min for a single row. Not used in workshop exercises.)
 
 -- A-7: Agent access — manual step (no SQL needed)
 -- Open Snowsight → left nav → "Agents"
