@@ -86,15 +86,6 @@ FROM (
         ) AS ai_result
     )
 
-    -- A-6: (removed — EXTRACT_PRESCRIPTION_ENTITIES UDF calls AI_EXTRACT internally,
-    --        takes 3-5 min for a single row. Not used in workshop exercises.)
-
-    UNION ALL
-
-    -- A-7: Manual — open Snowsight left nav → Agents and confirm agent is listed
-    SELECT 'A-7', 'Agent', 'Snowsight → Agents → CHOP_Pharmacy_Intelligence_Agent',
-           'Open Snowsight left nav → Agents. Confirm CHOP_Pharmacy_Intelligence_Agent is listed.',
-           'manual'
 
 )
 ORDER BY check_id;
